@@ -553,11 +553,15 @@
     }
 
     .copy {
-      @apply p-1 text-text-muted opacity-0 transition-opacity hover:text-white;
+      @apply p-1 text-text-muted opacity-0 transition-all duration-300 hover:text-gray-950 cursor-pointer;
     }
 
     &:hover .copy {
       @apply opacity-100;
+    }
+
+    .copy .copied {
+      @apply text-gray-950;
     }
 
     .footer {
@@ -589,7 +593,7 @@
     }
 
     .open {
-      @apply flex items-center gap-1 text-xs font-semibold text-text-muted transition-colors hover:text-white;
+      @apply flex items-center gap-1 text-xs font-semibold text-text-muted transition-colors hover:text-black;
     }
 
     .save {
