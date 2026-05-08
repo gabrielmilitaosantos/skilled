@@ -19,11 +19,19 @@ const SkillCard = ({
 	title,
 }: SkillRecord) => {
 	const [copied, setCopied] = useState(false);
+	const createdAtLabel = createdAt
+		? new Date(createdAt).toLocaleDateString()
+		: "Unknown date";
 
-	const handleCopy = () => {
-		navigator.clipboard.writeText(installCommand);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
+	const handleCopy = async () => {
+		if (!navigator.clipboard?.writeText) return;
+		try {
+			await navigator.clipboard.writeText(installCommand);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		} catch {
+			setCopied(false);
+		}
 	};
 
 	return (
@@ -51,7 +59,7 @@ const SkillCard = ({
 						<img src="/logo512.png" alt="author avatar" className="avatar" />
 						<div className="author-copy">
 							<p>Gabriel</p>
-							<p>{new Date(createdAt as string).toLocaleDateString()}</p>
+							<p>{createdAtLabel}</p>
 						</div>
 					</div>
 
