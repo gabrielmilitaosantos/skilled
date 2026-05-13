@@ -27,6 +27,7 @@ const SkillCard = ({
 		if (!navigator.clipboard?.writeText) return;
 		try {
 			await navigator.clipboard.writeText(installCommand);
+			window.umami?.track("install_command_copied", { skill: title });
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
 		} catch {
@@ -107,7 +108,14 @@ const SkillCard = ({
 					</div>
 
 					<div className="actions">
-						<Link to="/skills" className="open" title={`Open ${title}`}>
+						<Link
+							to="/skills"
+							className="open"
+							title={`Open ${title}`}
+							onClick={() =>
+								window.umami?.track("skill_opened", { skill: title })
+							}
+						>
 							<span>Open</span>
 							<ArrowUpRight size={14} />
 						</Link>

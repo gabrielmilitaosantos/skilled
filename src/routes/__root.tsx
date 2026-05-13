@@ -49,6 +49,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 		<html lang="en">
 			<head>
 				<HeadContent />
+				<script
+					defer
+					src="https://cloud.umami.is/script.js"
+					data-website-id="5caf114c-74cb-4115-b021-49ec93b184b2"
+				></script>
 			</head>
 			<body className="font-sans antialiased wrap-anywhere">
 				<ClerkProvider>

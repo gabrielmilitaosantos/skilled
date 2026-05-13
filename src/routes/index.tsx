@@ -22,11 +22,19 @@ function App() {
 				</div>
 
 				<div className="actions">
-					<Link to="/skills" className="btn-primary">
+					<Link
+						to="/skills"
+						className="btn-primary"
+						onClick={() => window.umami?.track("browse_registry_clicked")}
+					>
 						<Terminal size={18} />
 						<span>Browse Registry</span>
 					</Link>
-					<Link to="/skills/new" className="btn-secondary">
+					<Link
+						to="/skills/new"
+						className="btn-secondary"
+						onClick={() => window.umami?.track("publish_skill_checked")}
+					>
 						Publish Skill
 					</Link>
 				</div>
