@@ -20,7 +20,11 @@ export default function Navbar() {
 				</Show>
 
 				<Show when="signed-out">
-					<Link to="/sign-in/$" className="btn-primary">
+					<Link
+						to="/sign-in/$"
+						className="btn-primary"
+						onClick={() => window.umami?.track("sign_in_clicked")}
+					>
 						<LogIn size={16} />
 						Sign In
 					</Link>
