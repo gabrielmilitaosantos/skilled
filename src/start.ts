@@ -1,8 +1,14 @@
 import { clerkMiddleware } from "@clerk/tanstack-react-start/server";
-import { createStart } from "@tanstack/react-start";
+import { createCsrfMiddleware, createStart } from "@tanstack/react-start";
+
+// Protect only server functions.
+// Server routes (webhook) are free to receive external requests
+const csrfMiddleware = createCsrfMiddleware({
+	filter: (ctx) => ctx.handlerType === "serverFn",
+});
 
 export const startInstance = createStart(() => {
 	return {
-		requestMiddleware: [clerkMiddleware()],
+		requestMiddleware: [csrfMiddleware, clerkMiddleware()],
 	};
 });

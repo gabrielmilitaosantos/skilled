@@ -1,12 +1,15 @@
 interface SkillRecord {
     id: string;
+    authorId: string;
     title: string;
-    slug: string;
     description: string;
-    category: string;
     tags: string[];
     installCommand: string;
-    createdAt: string | null;
-    authorClerkId: string | null;
-    authorEmail: string | null;
+    promptConfig: string;
+    usageExample: string | null;
+    createdAt: string;
+    // Authors come by joins
+    authorEmail: string;
+    authorUsername: string;
+    authorImageUrl: string | null;
 }

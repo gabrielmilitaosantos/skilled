@@ -1,11 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Terminal } from "lucide-react";
 import SkillCard from "#/components/SkillCard.tsx";
-import { dummySkills } from "#/lib/dummy-skills.ts";
+import { getSkills } from "#/server/skills/queries/get-skills.ts";
 
-export const Route = createFileRoute("/")({ component: App });
+export const Route = createFileRoute("/")({
+	loader: () => getSkills(),
+	component: App,
+});
 
 function App() {
+	const skills = Route.useLoaderData();
+
 	return (
 		<div id="home">
 			<section className="hero">
@@ -49,9 +54,9 @@ function App() {
 				</div>
 
 				<div>
-					{dummySkills.length > 0 ? (
+					{skills.length > 0 ? (
 						<div className="skills-grid">
-							{dummySkills.map((skill) => (
+							{skills.map((skill) => (
 								<SkillCard key={skill.id} {...skill} />
 							))}
 						</div>
