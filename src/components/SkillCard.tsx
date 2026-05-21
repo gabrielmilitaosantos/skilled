@@ -10,18 +10,17 @@ import {
 import { useState } from "react";
 
 const SkillCard = ({
-	authorEmail,
-	category,
 	createdAt,
 	description,
 	installCommand,
 	tags,
 	title,
+	authorUsername,
+	authorImageUrl,
 }: SkillRecord) => {
 	const [copied, setCopied] = useState(false);
-	const createdAtLabel = createdAt
-		? new Date(createdAt).toLocaleDateString()
-		: "Unknown date";
+
+	const category = tags[0] ?? "General";
 
 	const handleCopy = async () => {
 		if (!navigator.clipboard?.writeText) return;
@@ -57,10 +56,18 @@ const SkillCard = ({
 			<div className="body">
 				<div className="meta">
 					<div className="author">
-						<img src="/logo512.png" alt="author avatar" className="avatar" />
+						<img
+							src={authorImageUrl || "/logo512.png"}
+							alt={`${authorUsername} avatar`}
+							className="avatar"
+						/>
 						<div className="author-copy">
-							<p>Gabriel</p>
-							<p>{createdAtLabel}</p>
+							<p>{authorUsername}</p>
+							<p>
+								{createdAt
+									? new Date(createdAt).toLocaleDateString()
+									: "Unknown date"}
+							</p>
 						</div>
 					</div>
 
@@ -103,7 +110,7 @@ const SkillCard = ({
 
 						<div className="comments">
 							<MessageSquare size={14} />
-							<span>{authorEmail ? 1 : 0}</span>
+							<span>0</span>
 						</div>
 					</div>
 
