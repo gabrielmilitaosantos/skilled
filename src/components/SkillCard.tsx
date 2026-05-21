@@ -15,7 +15,6 @@ const SkillCard = ({
 	installCommand,
 	tags,
 	title,
-	authorEmail,
 	authorUsername,
 	authorImageUrl,
 }: SkillRecord) => {
@@ -111,7 +110,7 @@ const SkillCard = ({
 
 						<div className="comments">
 							<MessageSquare size={14} />
-							<span>{authorEmail ? 1 : 0}</span>
+							<span>0</span>
 						</div>
 					</div>
 

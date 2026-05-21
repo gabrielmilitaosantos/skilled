@@ -16,7 +16,6 @@ export const getSkills = createServerFn({ method: "GET" }).handler(async () => {
 				promptConfig: skills.promptConfig,
 				usageExample: skills.usageExample,
 				createdAt: skills.createdAt,
-				authorEmail: users.email,
 				authorUsername: users.username,
 				authorImageUrl: users.imageUrl,
 			})
