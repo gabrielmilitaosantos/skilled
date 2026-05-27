@@ -5,6 +5,7 @@ import { getSkills } from "#/server/skills/queries/get-skills.ts";
 
 export const Route = createFileRoute("/")({
 	loader: () => getSkills(),
+	staleTime: 30_000,
 	component: App,
 });
 

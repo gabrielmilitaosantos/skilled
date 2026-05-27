@@ -9,7 +9,6 @@ interface SkillRecord {
     usageExample: string | null;
     createdAt: string;
     // Authors come by joins
-    authorEmail: string;
     authorUsername: string;
     authorImageUrl: string | null;
 }

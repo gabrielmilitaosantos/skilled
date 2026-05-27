@@ -1,6 +1,28 @@
 import { Show, UserButton } from "@clerk/tanstack-react-start";
 import { Link } from "@tanstack/react-router";
-import { LogIn } from "lucide-react";
+import { LogIn, Moon, Sun } from "lucide-react";
+import { useTheme } from "#/hooks/useTheme.ts";
+
+function ThemeToggle() {
+	const { theme, toggle } = useTheme();
+	const isDark = theme === "dark";
+
+	return (
+		<button
+			type="button"
+			onClick={toggle}
+			aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+			className="theme-toggle"
+		>
+			{/*Track*/}
+			<span className="theme-toggle-track" data-dark={isDark}>
+				<Sun size={16} className="theme-toggle-icon theme-toggle-icon-sun" />
+				<Moon size={16} className="theme-toggle-icon theme-toggle-icon-moon" />
+				<span className="theme-toggle-thumb" data-dark={isDark} />
+			</span>
+		</button>
+	);
+}
 
 export default function Navbar() {
 	return (
@@ -15,6 +37,8 @@ export default function Navbar() {
 			</div>
 
 			<div className="actions">
+				<ThemeToggle />
+
 				<Show when="signed-in">
 					<UserButton />
 				</Show>
