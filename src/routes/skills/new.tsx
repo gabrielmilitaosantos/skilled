@@ -10,7 +10,7 @@ import { createSkill } from "#/server/skills/mutations/create-skill.ts";
 import { skillSchema } from "#/server/skills/schemas/skill-schema.ts";
 
 export const Route = createFileRoute("/skills/new")({
-	beforeLoad: async ({ context }) => {
+	beforeLoad: ({ context }) => {
 		if (!context.userId) {
 			throw redirect({ to: "/sign-in/$" });
 		}

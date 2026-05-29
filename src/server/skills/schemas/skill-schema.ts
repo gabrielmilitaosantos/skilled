@@ -15,7 +15,8 @@ export const skillSchema = z.object({
 		.array(
 			z.string().trim().min(2, "Tags must contain at least 2 chars").max(20),
 		)
-		.min(1, "At least one tag is required"),
+		.min(1, "At least one tag is required")
+		.max(20, "At most 20 tags are allowed"),
 	installCommand: z
 		.string()
 		.trim()

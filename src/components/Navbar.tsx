@@ -12,6 +12,7 @@ function ThemeToggle() {
 			type="button"
 			onClick={toggle}
 			aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+			aria-pressed={isDark}
 			className="theme-toggle"
 		>
 			{/*Track*/}
