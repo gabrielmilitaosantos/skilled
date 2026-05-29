@@ -47,14 +47,7 @@ function NewSkillPage() {
 	const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		// Parse the tags string in array before validate.
-		const parsed = skillSchema.safeParse({
-			...fields,
-			tags: fields.tags
-				.split(",")
-				.map((tag) => tag.trim())
-				.filter(Boolean),
-		});
+		const parsed = skillSchema.safeParse(fields);
 
 		if (!parsed.success) {
 			const fieldErrors: Record<string, string> = {};
