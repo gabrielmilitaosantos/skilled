@@ -158,8 +158,12 @@
     @apply border-border outline-ring/50;
   }
 
-  html {
+  html.dark {
     color-scheme: dark;
+  }
+
+  html:not(.dark) {
+    color-scheme: light;
   }
 
   body {
@@ -309,7 +313,7 @@
     }
 
     .back {
-      @apply flex w-fit items-center gap-2 text-text-muted transition-colors hover:text-white;
+      @apply flex w-fit items-center gap-2 cursor-pointer text-text-muted transition-colors hover:text-[#8b5cf6];
 
       span {
         @apply text-sm font-medium;
@@ -320,7 +324,15 @@
       @apply mb-4 flex flex-col gap-2;
 
       h1 {
-        @apply text-3xl font-bold tracking-tight text-white md:text-4xl;
+        @apply text-3xl font-bold tracking-tight md:text-4xl;
+
+        &[data-dark="true"] {
+          @apply text-white;
+        }
+
+        &[data-dark="false"] {
+          @apply text-gray-950;
+        }
       }
 
       p {
@@ -402,6 +414,46 @@
 
     .actions {
       @apply flex items-center gap-4;
+    }
+  }
+
+  .theme-toggle {
+    @apply flex justify-between cursor-pointer items-center;
+  }
+
+  .theme-toggle-track {
+    @apply relative flex h-6 w-12 items-center rounded-full border border-border-subtle px-1 space-x-1.5 transition-colors duration-300;
+
+    &[data-dark="true"] {
+      @apply bg-muted;
+    }
+
+    &[data-dark="false"] {
+      @apply bg-secondary;
+    }
+  }
+
+  .theme-toggle-icon {
+    @apply relative z-10 shrink-0 transition-colors duration-300;
+  }
+
+  .theme-toggle-icon-sun {
+    @apply text-amber-400;
+  }
+
+  .theme-toggle-icon-moon {
+    @apply text-blue-400;
+  }
+
+  .theme-toggle-thumb {
+    @apply absolute top-px h-5 w-5 rounded-full border border-border-subtle shadow-sm transition-all duration-300;
+
+    &[data-dark="true"] {
+      @apply left-6 bg-foreground;
+    }
+
+    &[data-dark="false"] {
+      @apply left-0.5 bg-foreground;
     }
   }
 
@@ -608,7 +660,16 @@
   }
 
   .form-label {
-    @apply block! w-fit! text-sm! font-bold! leading-normal! uppercase! tracking-wider! text-white!;
+    @apply block! w-fit! text-sm! font-bold! leading-normal! uppercase! tracking-wider!;
+
+    &[data-dark="true"] {
+      @apply text-white!;
+    }
+
+    &[data-dark="false"] {
+      @apply text-gray-950!;
+    }
+
   }
 
   .form-description {
@@ -620,7 +681,15 @@
   }
 
   .input-field {
-    @apply h-auto! min-h-0! w-full! rounded-none! border! border-border-subtle! bg-surface! px-4! py-4! text-white! shadow-none! outline-none! transition-none! placeholder:text-text-muted! focus-visible:border-border-subtle! focus-visible:ring-0! focus-visible:ring-transparent! ring-0! aria-invalid:ring-0! dark:bg-surface!;
+    @apply h-auto! min-h-0! w-full! rounded-none! border! border-border-subtle! bg-surface! px-4! py-4! shadow-none! outline-none! transition-none! placeholder:text-text-muted! focus-visible:border-border-subtle! focus-visible:ring-0! focus-visible:ring-transparent! ring-0! aria-invalid:ring-0! dark:bg-surface!;
+
+    &[data-dark="true"] {
+      @apply text-white;
+    }
+
+    &[data-dark="false"] {
+      @apply text-gray-950;
+    }
   }
 
   .input-field-textarea {
@@ -628,7 +697,7 @@
   }
 
   .input-field-lg {
-    @apply text-base! md:text-base!;
+    @apply text-lg! md:text-sm!;
   }
 
   .input-field-sm {
