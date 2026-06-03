@@ -127,6 +127,7 @@ function SkillsPage() {
 					<input
 						type="text"
 						className="input-field search-input"
+						aria-label="Search skills"
 						placeholder="Search skills by name, tag or author..."
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
@@ -193,6 +194,7 @@ function SkillsPage() {
 									<input
 										type="text"
 										className="input-field input-field-sm"
+										aria-label="Filter skills by tag"
 										placeholder="e.g ai-agent"
 										value={tagInput}
 										onChange={(e) => setTagInput(e.target.value)}

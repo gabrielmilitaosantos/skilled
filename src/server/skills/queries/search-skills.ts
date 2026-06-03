@@ -46,15 +46,19 @@ export const searchSkills = createServerFn({ method: "GET" })
 
 		if (tag) {
 			// Filter the skills that contain exactly the selected tag.
-			conditions.push(sql`${tag} = ANY(${skills.tags})`);
+			conditions.push(sql`EXISTS (
+				SELECT 1
+				FROM unnest(${skills.tags}) AS t
+				WHERE lower(t) = lower(${tag})
+			)`);
 		}
 
 		const orderBy =
 			sort === "oldest"
-				? asc(skills.createdAt)
+				? ([asc(skills.createdAt), asc(skills.id)] as const)
 				: sort === "alpha"
-					? asc(skills.title)
-					: desc(skills.createdAt);
+					? ([asc(skills.title), asc(skills.id)] as const)
+					: ([desc(skills.createdAt), desc(skills.id)] as const);
 
 		// Main query with joins and filters
 		const baseQuery = db
@@ -68,7 +72,6 @@ export const searchSkills = createServerFn({ method: "GET" })
 				promptConfig: skills.promptConfig,
 				usageExample: skills.usageExample,
 				createdAt: skills.createdAt,
-				authorEmail: users.email,
 				authorUsername: users.username,
 				authorImageUrl: users.imageUrl,
 			})
@@ -84,7 +87,10 @@ export const searchSkills = createServerFn({ method: "GET" })
 				: baseQuery;
 
 		const [rows, countResult] = await Promise.all([
-			filteredQuery.orderBy(orderBy).limit(limit).offset(offset),
+			filteredQuery
+				.orderBy(...orderBy)
+				.limit(limit)
+				.offset(offset),
 			db
 				.select({ count: sql<number>`COUNT(*)::int` })
 				.from(skills)
