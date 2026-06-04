@@ -15,6 +15,13 @@
       "when": 1778787658503,
       "tag": "0001_sleepy_genesis",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780600683804,
+      "tag": "0002_breezy_marvel_apes",
+      "breakpoints": true
     }
   ]
 }
