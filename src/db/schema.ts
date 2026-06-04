@@ -1,4 +1,11 @@
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+	index,
+	pgTable,
+	primaryKey,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
 	id: uuid("id").defaultRandom().primaryKey(),
@@ -24,9 +31,45 @@ export const skills = pgTable(
 		usageExample: text("usage_example"), // Optional
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 	},
-	(table) => ({
-		authorIdIdx: index("skills_author_id_idx").on(table.authorId),
-		createdAtIdx: index("skills_created_at_idx").on(table.createdAt),
-		tagsIdx: index("skills_tags_idx").using("gin", table.tags),
-	}),
+	(table) => [
+		index("skills_author_id_idx").on(table.authorId),
+		index("skills_created_at_idx").on(table.createdAt),
+		index("skills_tags_idx").using("gin", table.tags),
+	],
+);
+
+// Composite key (userId + skillId). User can vote one time for each skill.
+export const skillVotes = pgTable(
+	"skill_votes",
+	{
+		userId: uuid("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		skillId: uuid("skill_id")
+			.notNull()
+			.references(() => skills.id, { onDelete: "cascade" }),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+	},
+	(table) => [
+		primaryKey({ columns: [table.userId, table.skillId] }),
+		index("skill_votes_skill_id_idx").on(table.skillId),
+	],
+);
+
+// Same logic of composite key.
+export const savedSkills = pgTable(
+	"saved_skills",
+	{
+		userId: uuid("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		skillId: uuid("skill_id")
+			.notNull()
+			.references(() => skills.id, { onDelete: "cascade" }),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+	},
+	(table) => [
+		primaryKey({ columns: [table.userId, table.skillId] }),
+		index("saved_skills_skill_id_idx").on(table.skillId),
+	],
 );
