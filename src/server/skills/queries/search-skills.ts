@@ -1,8 +1,11 @@
+import { auth } from "@clerk/tanstack-react-start/server";
 import { createServerFn } from "@tanstack/react-start";
-import { asc, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "#/db/client.ts";
-import { skills, users } from "#/db/schema.ts";
+import { skills, skillVotes, users } from "#/db/schema.ts";
+import { getUserSkillStates } from "#/server/skills/queries/get-user-skill-states.ts";
+import { getUserByClerkId } from "#/server/users/queries/get-user-by-clerk-id.ts";
 
 const searchSkillsSchema = z.object({
 	query: z.string().optional(),
@@ -27,6 +30,9 @@ export const searchSkills = createServerFn({ method: "GET" })
 
 		const limit = 10;
 		const offset = (page - 1) * limit;
+
+		const { userId: clerkId } = await auth();
+		const user = clerkId ? await getUserByClerkId(clerkId) : null;
 
 		// Search conditions by text - filter by title, tags and author username.
 		const conditions = [];
@@ -55,59 +61,74 @@ export const searchSkills = createServerFn({ method: "GET" })
 
 		const orderBy =
 			sort === "oldest"
-				? ([asc(skills.createdAt), asc(skills.id)] as const)
+				? asc(skills.createdAt)
 				: sort === "alpha"
-					? ([asc(skills.title), asc(skills.id)] as const)
-					: ([desc(skills.createdAt), desc(skills.id)] as const);
+					? asc(skills.title)
+					: desc(skills.createdAt);
 
-		// Main query with joins and filters
-		const baseQuery = db
-			.select({
-				id: skills.id,
-				authorId: skills.authorId,
-				title: skills.title,
-				description: skills.description,
-				tags: skills.tags,
-				installCommand: skills.installCommand,
-				promptConfig: skills.promptConfig,
-				usageExample: skills.usageExample,
-				createdAt: skills.createdAt,
-				authorUsername: users.username,
-				authorImageUrl: users.imageUrl,
-			})
-			.from(skills)
-			.innerJoin(users, eq(skills.authorId, users.id));
-
-		// Apply the conditions, if any.
-		const filteredQuery =
-			conditions.length > 0
-				? baseQuery.where(
-						sql`${conditions.reduce((acc, c) => sql`${acc} AND ${c}`)}`,
-					)
-				: baseQuery;
+		const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
 		const [rows, countResult] = await Promise.all([
-			filteredQuery
-				.orderBy(...orderBy)
+			db
+				.select({
+					id: skills.id,
+					authorId: skills.authorId,
+					title: skills.title,
+					description: skills.description,
+					tags: skills.tags,
+					installCommand: skills.installCommand,
+					promptConfig: skills.promptConfig,
+					usageExample: skills.usageExample,
+					createdAt: skills.createdAt,
+					authorEmail: users.email,
+					authorUsername: users.username,
+					authorImageUrl: users.imageUrl,
+					voteCount: count(skillVotes.skillId),
+				})
+				.from(skills)
+				.innerJoin(users, eq(skills.authorId, users.id))
+				.leftJoin(skillVotes, eq(skillVotes.skillId, skills.id))
+				.where(whereClause)
+				.groupBy(skills.id, users.id)
+				.orderBy(orderBy)
 				.limit(limit)
 				.offset(offset),
 			db
-				.select({ count: sql<number>`COUNT(*)::int` })
+				.select({
+					count: sql<number>`COUNT(*)::int`,
+				})
 				.from(skills)
 				.innerJoin(users, eq(skills.authorId, users.id))
-				.where(
-					conditions.length > 0
-						? sql`${conditions.reduce((acc, c) => sql`${acc} AND ${c}`)}`
-						: sql`1=1`,
-				),
+				.where(whereClause),
 		]);
 
 		const total = countResult[0]?.count ?? 0;
+
+		if (!user) {
+			return {
+				skills: rows.map((row) => ({
+					...row,
+					createdAt: row.createdAt.toISOString(),
+					voteCount: row.voteCount ?? 0,
+					isVoted: false,
+					isSaved: false,
+				})),
+				total,
+				page,
+				totalPages: Math.ceil(total / limit),
+			};
+		}
+
+		const skillIds = rows.map((row) => row.id);
+		const { votedSet, savedSet } = await getUserSkillStates(user.id, skillIds);
 
 		return {
 			skills: rows.map((row) => ({
 				...row,
 				createdAt: row.createdAt.toISOString(),
+				voteCount: row.voteCount ?? 0,
+				isVoted: votedSet.has(row.id),
+				isSaved: savedSet.has(row.id),
 			})),
 			total,
 			page,

@@ -11,4 +11,8 @@ interface SkillRecord {
     // Authors come by joins
     authorUsername: string;
     authorImageUrl: string | null;
+    voteCount: number;
+    // Actual user state - false for guests
+    isVoted: boolean;
+    isSaved: boolean;
 }
