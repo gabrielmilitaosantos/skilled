@@ -1,15 +1,19 @@
 import { auth } from "@clerk/tanstack-react-start/server";
 import { createServerFn } from "@tanstack/react-start";
-import { count, desc, eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { db } from "#/db/client.ts";
-import { skills, skillVotes, users } from "#/db/schema.ts";
+import { savedSkills, skills, skillVotes, users } from "#/db/schema.ts";
 import { getUserSkillStates } from "#/server/skills/queries/get-user-skill-states.ts";
 import { getUserByClerkId } from "#/server/users/queries/get-user-by-clerk-id.ts";
 
-export const getSkills = createServerFn({ method: "GET" }).handler(
+export const getSavedSkills = createServerFn({ method: "GET" }).handler(
 	async (): Promise<SkillRecord[]> => {
 		const { userId: clerkId } = await auth();
-		const user = clerkId ? await getUserByClerkId(clerkId) : null;
+
+		if (!clerkId) throw new Error("Unauthorized");
+
+		const user = await getUserByClerkId(clerkId);
+		if (!user) throw new Error("User not found");
 
 		const rows = await db
 			.select({
@@ -26,33 +30,23 @@ export const getSkills = createServerFn({ method: "GET" }).handler(
 				authorImageUrl: users.imageUrl,
 				voteCount: count(skillVotes.skillId),
 			})
-			.from(skills)
+			.from(savedSkills)
+			.innerJoin(skills, eq(savedSkills.skillId, skills.id))
 			.innerJoin(users, eq(skills.authorId, users.id))
 			.leftJoin(skillVotes, eq(skillVotes.skillId, skills.id))
-			.groupBy(skills.id, users.id)
-			.orderBy(desc(skills.createdAt))
-			.limit(10);
+			.where(eq(savedSkills.userId, user.id))
+			.groupBy(skills.id, users.id, savedSkills.createdAt)
+			.orderBy(savedSkills.createdAt);
 
-		if (!user) {
-			return rows.map((row) => ({
-				...row,
-				createdAt: row.createdAt.toISOString(),
-				voteCount: row.voteCount ?? 0,
-				isVoted: false,
-				isSaved: false,
-			}));
-		}
-
-		// For authenticated users, search for upvote & save states.
 		const skillIds = rows.map((row) => row.id);
-		const { votedSet, savedSet } = await getUserSkillStates(user.id, skillIds);
+		const { votedSet } = await getUserSkillStates(user.id, skillIds);
 
 		return rows.map((row) => ({
 			...row,
 			createdAt: row.createdAt.toISOString(),
 			voteCount: row.voteCount ?? 0,
 			isVoted: votedSet.has(row.id),
-			isSaved: savedSet.has(row.id),
+			isSaved: true,
 		}));
 	},
 );

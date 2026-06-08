@@ -1,17 +1,19 @@
 import { auth } from "@clerk/tanstack-react-start/server";
 import { createServerFn } from "@tanstack/react-start";
-import { count, desc, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "#/db/client.ts";
-import { skills, skillVotes, users } from "#/db/schema.ts";
-import { getUserSkillStates } from "#/server/skills/queries/get-user-skill-states.ts";
+import { savedSkills, skills, skillVotes, users } from "#/db/schema.ts";
 import { getUserByClerkId } from "#/server/users/queries/get-user-by-clerk-id.ts";
 
-export const getSkills = createServerFn({ method: "GET" }).handler(
-	async (): Promise<SkillRecord[]> => {
+export const getSkillById = createServerFn({ method: "GET" })
+	.inputValidator(z.uuid())
+	.handler(async ({ data: id }): Promise<SkillRecord | null> => {
 		const { userId: clerkId } = await auth();
+
 		const user = clerkId ? await getUserByClerkId(clerkId) : null;
 
-		const rows = await db
+		const [row] = await db
 			.select({
 				id: skills.id,
 				authorId: skills.authorId,
@@ -29,30 +31,38 @@ export const getSkills = createServerFn({ method: "GET" }).handler(
 			.from(skills)
 			.innerJoin(users, eq(skills.authorId, users.id))
 			.leftJoin(skillVotes, eq(skillVotes.skillId, skills.id))
-			.groupBy(skills.id, users.id)
-			.orderBy(desc(skills.createdAt))
-			.limit(10);
+			.where(eq(skills.id, id))
+			.groupBy(skills.id, users.id);
 
-		if (!user) {
-			return rows.map((row) => ({
-				...row,
-				createdAt: row.createdAt.toISOString(),
-				voteCount: row.voteCount ?? 0,
-				isVoted: false,
-				isSaved: false,
-			}));
-		}
+		if (!row) return null;
 
-		// For authenticated users, search for upvote & save states.
-		const skillIds = rows.map((row) => row.id);
-		const { votedSet, savedSet } = await getUserSkillStates(user.id, skillIds);
+		// Check isVoted & isSaved only if there's an authenticated user.
+		const [isVoted, isSaved] = user
+			? await Promise.all([
+					db.query.skillVotes
+						.findFirst({
+							where: and(
+								eq(skillVotes.userId, user.id),
+								eq(skillVotes.skillId, id),
+							),
+						})
+						.then(Boolean),
+					db.query.savedSkills
+						.findFirst({
+							where: and(
+								eq(savedSkills.userId, user.id),
+								eq(savedSkills.skillId, id),
+							),
+						})
+						.then(Boolean),
+				])
+			: [false, false];
 
-		return rows.map((row) => ({
+		return {
 			...row,
 			createdAt: row.createdAt.toISOString(),
 			voteCount: row.voteCount ?? 0,
-			isVoted: votedSet.has(row.id),
-			isSaved: savedSet.has(row.id),
-		}));
-	},
-);
+			isVoted,
+			isSaved,
+		};
+	});
