@@ -80,7 +80,6 @@ export const searchSkills = createServerFn({ method: "GET" })
 					promptConfig: skills.promptConfig,
 					usageExample: skills.usageExample,
 					createdAt: skills.createdAt,
-					authorEmail: users.email,
 					authorUsername: users.username,
 					authorImageUrl: users.imageUrl,
 					voteCount: count(skillVotes.skillId),

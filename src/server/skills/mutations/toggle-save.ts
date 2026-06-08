@@ -1,7 +1,7 @@
 import { auth } from "@clerk/tanstack-react-start/server";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq } from "drizzle-orm";
-import z from "zod";
+import { z } from "zod";
 import { db } from "#/db/client.ts";
 import { savedSkills } from "#/db/schema.ts";
 import { getUserByClerkId } from "#/server/users/queries/get-user-by-clerk-id.ts";

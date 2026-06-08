@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { count, eq } from "drizzle-orm";
 import { db } from "#/db/client.ts";
 import { savedSkills, skills, skillVotes, users } from "#/db/schema.ts";
+import { getUserSkillStates } from "#/server/skills/queries/get-user-skill-states.ts";
 import { getUserByClerkId } from "#/server/users/queries/get-user-by-clerk-id.ts";
 
 export const getSavedSkills = createServerFn({ method: "GET" }).handler(
@@ -37,11 +38,14 @@ export const getSavedSkills = createServerFn({ method: "GET" }).handler(
 			.groupBy(skills.id, users.id, savedSkills.createdAt)
 			.orderBy(savedSkills.createdAt);
 
+		const skillIds = rows.map((row) => row.id);
+		const { votedSet } = await getUserSkillStates(user.id, skillIds);
+
 		return rows.map((row) => ({
 			...row,
 			createdAt: row.createdAt.toISOString(),
 			voteCount: row.voteCount ?? 0,
-			isVoted: true,
+			isVoted: votedSet.has(row.id),
 			isSaved: true,
 		}));
 	},
