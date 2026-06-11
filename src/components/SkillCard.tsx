@@ -1,15 +1,20 @@
-import { Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
 	ArrowBigUp,
 	ArrowUpRight,
 	Bookmark,
+	BookmarkCheck,
 	Check,
 	Copy,
 	MessageSquare,
 } from "lucide-react";
 import { useState } from "react";
+import { toggleSave } from "#/server/skills/mutations/toggle-save.ts";
+import { toggleVote } from "#/server/skills/mutations/toggle-vote.ts";
 
 const SkillCard = ({
+	id,
 	createdAt,
 	description,
 	installCommand,
@@ -17,8 +22,19 @@ const SkillCard = ({
 	title,
 	authorUsername,
 	authorImageUrl,
+	voteCount,
+	isVoted,
+	isSaved,
 }: SkillRecord) => {
+	const navigate = useNavigate();
+	const queryClient = useQueryClient();
+
 	const [copied, setCopied] = useState(false);
+	const [voted, setVoted] = useState(isVoted);
+	const [saved, setSaved] = useState(isSaved);
+	const [votes, setVotes] = useState(voteCount);
+	const [votePending, setVotePending] = useState(false);
+	const [savePending, setSavePending] = useState(false);
 
 	const category = tags[0] ?? "General";
 
@@ -34,10 +50,77 @@ const SkillCard = ({
 		}
 	};
 
+	const handleVote = async (e: React.MouseEvent) => {
+		// Prevents the click from propagating to the overlay that navigates to the skill.
+		e.preventDefault();
+		e.stopPropagation();
+
+		if (votePending) return;
+
+		/*
+			If not authenticated, isVoted will always be false.
+			toggleVote will throw 'Unauthorized' - redirect before.
+		 */
+
+		setVotePending(true);
+
+		// Update the UI before server's answer.
+		const prevVoted = voted;
+		const prevVotes = votes;
+		setVoted(!voted);
+		setVotes(voted ? votes - 1 : votes + 1);
+
+		try {
+			const result = await toggleVote({ data: { skillId: id } });
+			setVoted(result.voted);
+			setVotes(result.voted ? prevVotes + 1 : prevVotes - 1);
+
+			// Invalidate the cache for sync w/ other card instances
+			await queryClient.invalidateQueries({ queryKey: ["skills"] });
+		} catch (error: unknown) {
+			// Reverts the optimistic update in case of error.
+			setVoted(prevVoted);
+			setVotes(prevVotes);
+
+			if (error instanceof Error && error.message.includes("Unauthorized")) {
+				await navigate({ to: "/sign-in/$" });
+			}
+		} finally {
+			setVotePending(false);
+		}
+	};
+
+	const handleSave = async (e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+
+		if (savePending) return;
+
+		setSavePending(true);
+
+		const prevSaved = saved;
+		setSaved(!saved);
+
+		try {
+			const result = await toggleSave({ data: { skillId: id } });
+			setSaved(result.saved);
+			await queryClient.invalidateQueries({ queryKey: ["skills"] });
+			await queryClient.invalidateQueries({ queryKey: ["saved-skills"] });
+		} catch (error: unknown) {
+			setSaved(prevSaved);
+			if (error instanceof Error && error.message.includes("Unauthorized")) {
+				await navigate({ to: "/sign-in/$" });
+			}
+		} finally {
+			setSavePending(false);
+		}
+	};
+
 	return (
 		<article className="skill-card">
 			<Link
-				to="/skills"
+				to="/skills/$id"
+				params={{ id }}
 				tabIndex={-1}
 				aria-label={`Open ${title}`}
 				className="overlay"
@@ -75,7 +158,7 @@ const SkillCard = ({
 				</div>
 
 				<div className="summary">
-					<Link to="/skills" className="title-link">
+					<Link to="/skills/$id" params={{ id }} className="title-link">
 						<h3>{title}</h3>
 					</Link>
 
@@ -103,9 +186,16 @@ const SkillCard = ({
 
 				<div className="footer">
 					<div className="stats">
-						<button type="button" className="upvote" disabled>
-							<ArrowBigUp size={16} fill="currentColor" />
-							<span>{tags.length}</span>
+						<button
+							type="button"
+							className={`upvote ${voted ? "upvote-active" : ""}`}
+							onClick={handleVote}
+							disabled={votePending}
+							aria-label={voted ? "Remove upvote" : "Upvote"}
+							aria-pressed={voted}
+						>
+							<ArrowBigUp size={16} fill={voted ? "currentColor" : "none"} />
+							<span>{votes}</span>
 						</button>
 
 						<div className="comments">
@@ -116,7 +206,8 @@ const SkillCard = ({
 
 					<div className="actions">
 						<Link
-							to="/skills"
+							to="/skills/$id"
+							params={{ id }}
 							className="open"
 							title={`Open ${title}`}
 							onClick={() =>
@@ -129,11 +220,13 @@ const SkillCard = ({
 
 						<button
 							type="button"
-							className="save"
-							aria-label="Saved state"
-							disabled
+							className={`save ${saved ? "save-active" : ""}`}
+							onClick={handleSave}
+							disabled={savePending}
+							aria-label={saved ? "Remove from saved" : "Save skill"}
+							aria-pressed={saved}
 						>
-							<Bookmark size={16} />
+							{saved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
 						</button>
 					</div>
 				</div>

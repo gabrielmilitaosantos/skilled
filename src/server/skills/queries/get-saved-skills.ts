@@ -35,7 +35,7 @@ export const getSavedSkills = createServerFn({ method: "GET" }).handler(
 			.innerJoin(users, eq(skills.authorId, users.id))
 			.leftJoin(skillVotes, eq(skillVotes.skillId, skills.id))
 			.where(eq(savedSkills.userId, user.id))
-			.groupBy(skills.id, users.id, savedSkills.createdAt)
+			.groupBy(skills.id, users.id)
 			.orderBy(savedSkills.createdAt);
 
 		const skillIds = rows.map((row) => row.id);
