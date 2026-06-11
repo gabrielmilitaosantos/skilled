@@ -77,6 +77,7 @@ const SkillCard = ({
 
 			// Invalidate the cache for sync w/ other card instances
 			await queryClient.invalidateQueries({ queryKey: ["skills"] });
+			await queryClient.invalidateQueries({ queryKey: ["saved-skills"] });
 		} catch (error: unknown) {
 			// Reverts the optimistic update in case of error.
 			setVoted(prevVoted);

@@ -1,3 +1,4 @@
+import { clearTimeout } from "node:timers";
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
@@ -41,7 +42,8 @@ function SkillDetailPage() {
 		try {
 			await navigator.clipboard.writeText(text);
 			setter(true);
-			setTimeout(() => setter(false), 2000);
+			const timeout = setTimeout(() => setter(false), 2000);
+			return () => clearTimeout(timeout);
 		} catch {}
 	};
 
