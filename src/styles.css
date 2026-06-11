@@ -751,7 +751,11 @@
     }
 
     .upvote {
-      @apply flex cursor-default items-center gap-1.5 text-accent-primary transition-colors;
+      @apply flex cursor-pointer items-center gap-1.5 text-text-muted transition-colors hover:text-accent-primary disabled:opacity-60;
+
+      &.upvote-active {
+        @apply text-accent-primary;
+      }
 
       span {
         @apply text-xs font-bold;
@@ -775,7 +779,11 @@
     }
 
     .save {
-      @apply cursor-default rounded bg-accent-primary/10 p-1.5 text-accent-primary transition-colors;
+      @apply cursor-pointer rounded p-1.5 text-text-muted transition-colors hover:text-accent-primary disabled:opacity-60;
+
+      &.save-active {
+        @apply bg-accent-primary/10 text-accent-primary;
+      }
     }
   }
 
@@ -850,6 +858,166 @@
 
   .btn-secondary {
     @apply bg-transparent! text-foreground! border! border-border! px-6! py-2.5! rounded-sm! font-semibold! text-sm! transition-all! hover:bg-accent! hover:border-muted-foreground! cursor-pointer! flex! items-center! justify-center! gap-2!;
+  }
+
+  .navbar-link {
+    @apply flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-foreground;
+  }
+
+  .navbar-submit {
+    @apply px-4! py-2! text-xs!;
+  }
+
+  #skill-detail {
+    @apply relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pb-20 pt-8 md:px-12;
+
+    .back {
+      @apply flex w-fit items-center gap-2 cursor-pointer text-text-muted transition-colors hover:text-accent-primary;
+
+      span {
+        @apply text-sm font-medium;
+      }
+    }
+
+    .skill-detail-layout {
+      @apply flex flex-col gap-8 lg:flex-row lg:items-start;
+    }
+
+    .skill-detail-main {
+      @apply flex flex-1 flex-col gap-8;
+    }
+
+    .skill-detail-header {
+      @apply flex flex-col gap-4;
+
+      h1 {
+        @apply text-3xl font-bold tracking-tight text-black dark:text-white md:text-4xl;
+      }
+
+      p {
+        @apply text-lg leading-relaxed text-text-muted;
+      }
+    }
+
+    .skill-detail-tags {
+      @apply flex flex-wrap gap-2;
+
+      .tag-chip {
+        @apply rounded-sm border border-border-subtle bg-muted px-2.5 py-1 text-xs font-medium text-text-muted;
+      }
+    }
+
+    .skill-detail-section {
+      @apply flex flex-col gap-3;
+    }
+
+    .skill-detail-section-header {
+      @apply flex items-center gap-3;
+
+      .skill-detail-section-icon {
+        @apply font-mono text-sm text-accent-primary;
+      }
+
+      h2 {
+        @apply flex-1 text-xs font-bold uppercase tracking-wider text-text-muted;
+      }
+    }
+
+    .section-copy {
+      @apply flex cursor-pointer items-center gap-1.5 text-xs text-text-muted transition-colors hover:text-foreground;
+    }
+
+    .skill-detail-code {
+      @apply relative rounded-sm border border-border-subtle bg-surface p-4;
+
+      code {
+        @apply block whitespace-pre-wrap font-mono text-sm leading-relaxed text-foreground;
+      }
+    }
+
+    .skill-detail-sidebar {
+      @apply flex w-full flex-col gap-4 rounded-sm border border-border-subtle bg-surface p-6 lg:w-72 lg:shrink-0;
+    }
+
+    .sidebar-author {
+      @apply flex items-center gap-3 border-b border-border-subtle pb-4;
+    }
+
+    .sidebar-avatar {
+      @apply h-10 w-10 rounded-md object-cover;
+    }
+
+    .sidebar-author-name {
+      @apply text-sm font-semibold text-foreground;
+    }
+
+    .sidebar-author-role {
+      @apply text-xs font-mono text-text-muted;
+    }
+
+    .sidebar-meta {
+      @apply flex flex-col gap-2;
+    }
+
+    .sidebar-meta-row {
+      @apply flex items-center justify-between text-sm;
+
+      span:first-child {
+        @apply text-text-muted;
+      }
+
+      span:last-child {
+        @apply font-medium text-foreground;
+      }
+    }
+
+    .sidebar-copy-btn {
+      @apply w-full justify-center;
+    }
+
+    .sidebar-actions {
+      @apply flex gap-2 border-t border-border-subtle pt-4;
+    }
+
+    .sidebar-vote {
+      @apply flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-sm border border-border-subtle py-2 text-sm text-text-muted transition-all hover:border-accent-primary hover:text-accent-primary disabled:opacity-60;
+
+      &.sidebar-vote-active {
+        @apply border-accent-primary bg-accent-primary/10 text-accent-primary;
+      }
+    }
+
+    .sidebar-save {
+      @apply flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-sm border border-border-subtle py-2 text-sm text-text-muted transition-all hover:border-accent-primary hover:text-accent-primary disabled:opacity-60;
+
+      &.sidebar-save-active {
+        @apply border-accent-primary bg-accent-primary/10 text-accent-primary;
+      }
+    }
+  }
+
+  #saved-page {
+    @apply relative z-10 flex flex-col gap-8 px-4 pb-20 pt-8 md:px-12;
+
+    .intro {
+      @apply flex flex-col gap-2;
+
+      h1 {
+        @apply text-3xl font-bold tracking-tight text-black dark:text-white md:text-4xl;
+      }
+
+      p {
+        @apply text-lg text-text-muted;
+      }
+    }
+
+    .saved-empty {
+      @apply flex flex-col items-center gap-6 py-20 text-center;
+
+      p {
+        @apply text-text-muted;
+      }
+    }
   }
 }
 

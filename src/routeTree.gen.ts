@@ -9,13 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SavedRouteImport } from './routes/saved'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SkillsIndexRouteImport } from './routes/skills/index'
 import { Route as SkillsNewRouteImport } from './routes/skills/new'
+import { Route as SkillsIdRouteImport } from './routes/skills/$id'
 import { Route as ApiWebhooksClerkRouteImport } from './routes/api/webhooks/clerk'
 import { Route as _authSignUpSplatRouteImport } from './routes/__auth/sign-up.$'
 import { Route as _authSignInSplatRouteImport } from './routes/__auth/sign-in.$'
 
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -29,6 +36,11 @@ const SkillsIndexRoute = SkillsIndexRouteImport.update({
 const SkillsNewRoute = SkillsNewRouteImport.update({
   id: '/skills/new',
   path: '/skills/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SkillsIdRoute = SkillsIdRouteImport.update({
+  id: '/skills/$id',
+  path: '/skills/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWebhooksClerkRoute = ApiWebhooksClerkRouteImport.update({
@@ -49,6 +61,8 @@ const _authSignInSplatRoute = _authSignInSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/saved': typeof SavedRoute
+  '/skills/$id': typeof SkillsIdRoute
   '/skills/new': typeof SkillsNewRoute
   '/skills/': typeof SkillsIndexRoute
   '/sign-in/$': typeof _authSignInSplatRoute
@@ -57,6 +71,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/saved': typeof SavedRoute
+  '/skills/$id': typeof SkillsIdRoute
   '/skills/new': typeof SkillsNewRoute
   '/skills': typeof SkillsIndexRoute
   '/sign-in/$': typeof _authSignInSplatRoute
@@ -66,6 +82,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/saved': typeof SavedRoute
+  '/skills/$id': typeof SkillsIdRoute
   '/skills/new': typeof SkillsNewRoute
   '/skills/': typeof SkillsIndexRoute
   '/__auth/sign-in/$': typeof _authSignInSplatRoute
@@ -76,6 +94,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/saved'
+    | '/skills/$id'
     | '/skills/new'
     | '/skills/'
     | '/sign-in/$'
@@ -84,6 +104,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/saved'
+    | '/skills/$id'
     | '/skills/new'
     | '/skills'
     | '/sign-in/$'
@@ -92,6 +114,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/saved'
+    | '/skills/$id'
     | '/skills/new'
     | '/skills/'
     | '/__auth/sign-in/$'
@@ -101,6 +125,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SavedRoute: typeof SavedRoute
+  SkillsIdRoute: typeof SkillsIdRoute
   SkillsNewRoute: typeof SkillsNewRoute
   SkillsIndexRoute: typeof SkillsIndexRoute
   _authSignInSplatRoute: typeof _authSignInSplatRoute
@@ -110,6 +136,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -129,6 +162,13 @@ declare module '@tanstack/react-router' {
       path: '/skills/new'
       fullPath: '/skills/new'
       preLoaderRoute: typeof SkillsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skills/$id': {
+      id: '/skills/$id'
+      path: '/skills/$id'
+      fullPath: '/skills/$id'
+      preLoaderRoute: typeof SkillsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/webhooks/clerk': {
@@ -157,6 +197,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SavedRoute: SavedRoute,
+  SkillsIdRoute: SkillsIdRoute,
   SkillsNewRoute: SkillsNewRoute,
   SkillsIndexRoute: SkillsIndexRoute,
   _authSignInSplatRoute: _authSignInSplatRoute,

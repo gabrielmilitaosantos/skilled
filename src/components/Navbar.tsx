@@ -1,6 +1,6 @@
 import { Show, UserButton } from "@clerk/tanstack-react-start";
 import { Link } from "@tanstack/react-router";
-import { LogIn, Moon, Sun } from "lucide-react";
+import { Bookmark, LogIn, Moon, Plus, Search, Sun } from "lucide-react";
 import { useTheme } from "#/hooks/useTheme.ts";
 
 function ThemeToggle() {
@@ -38,13 +38,28 @@ export default function Navbar() {
 			</div>
 
 			<div className="actions">
-				<ThemeToggle />
-
 				<Show when="signed-in">
+					<Link to="/skills" className="navbar-link">
+						<Search size={14} />
+						<span>Explore</span>
+					</Link>
+
+					<Link to="/saved" className="navbar-link">
+						<Bookmark size={14} />
+						<span>Saved</span>
+					</Link>
+
+					<Link to="/skills/new" className="btn-primary navbar-submit">
+						<Plus size={14} />
+						<span>Submit Skill</span>
+					</Link>
+
+					<ThemeToggle />
 					<UserButton />
 				</Show>
 
 				<Show when="signed-out">
+					<ThemeToggle />
 					<Link
 						to="/sign-in/$"
 						className="btn-primary"
