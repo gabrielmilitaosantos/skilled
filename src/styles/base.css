@@ -1,0 +1,72 @@
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+
+    html.dark {
+        color-scheme: dark;
+    }
+
+    html:not(.dark) {
+        color-scheme: light;
+    }
+
+    body {
+        @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30 selection:text-primary;
+        letter-spacing: var(--tracking-normal);
+    }
+
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-background;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-border rounded-full;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-muted-foreground;
+    }
+}
+
+@layer components {
+    .frame {
+        @apply w-full max-w-6xl border-x border-border-subtle;
+    }
+
+    .skills-grid {
+        @apply grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3;
+    }
+
+    #root-layout {
+        @apply bg-diagonal-pattern flex min-h-screen flex-col items-center wrap-anywhere;
+
+        & > header {
+            @apply z-50 flex w-full justify-center border-b border-border-subtle bg-base/90 backdrop-blur-md;
+        }
+
+        & > header > .frame {
+            @apply relative bg-base/50;
+        }
+
+        & > header > .frame > svg:first-of-type {
+            @apply -bottom-1.5 -left-1.5;
+        }
+
+        & > header > .frame > svg:last-of-type {
+            @apply -bottom-1.5 -right-1.5;
+        }
+
+        & > main {
+            @apply flex w-full flex-col items-center;
+        }
+
+        & > main > .frame {
+            @apply relative w-full overflow-hidden bg-base py-16 md:py-24;
+        }
+    }
+}

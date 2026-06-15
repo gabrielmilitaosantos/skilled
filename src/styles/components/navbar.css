@@ -1,0 +1,71 @@
+.navbar {
+    @apply relative z-50 flex h-16 items-center justify-between border-b border-border-subtle bg-base/80 px-4 backdrop-blur-sm md:px-8;
+
+    .brand {
+        @apply flex cursor-pointer items-center gap-2 md:gap-3;
+
+        span {
+            @apply text-lg font-bold tracking-tight text-black dark:text-white md:text-xl;
+        }
+    }
+
+    .mark {
+        @apply flex h-7 w-7 items-center justify-center rounded bg-linear-to-br from-accent-primary to-accent-secondary md:h-8 md:w-8;
+    }
+
+    .glyph {
+        @apply h-3 w-3 rotate-45 rounded-sm bg-black md:h-4 md:w-4;
+    }
+
+    .actions {
+        @apply flex items-center gap-4;
+    }
+}
+
+.navbar-link {
+    @apply flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-foreground;
+}
+
+.navbar-submit {
+    @apply px-4! py-2! text-xs!;
+}
+
+.theme-toggle {
+    @apply flex justify-between cursor-pointer items-center;
+}
+
+.theme-toggle-track {
+    @apply relative flex h-6 w-12 items-center rounded-full border border-border-subtle px-1 space-x-1.5 transition-colors duration-300;
+
+    &[data-dark="true"] {
+        @apply bg-muted;
+    }
+
+    &[data-dark="false"] {
+        @apply bg-secondary;
+    }
+}
+
+.theme-toggle-icon {
+    @apply relative z-10 shrink-0 transition-colors duration-300;
+}
+
+.theme-toggle-icon-sun {
+    @apply text-amber-400;
+}
+
+.theme-toggle-icon-moon {
+    @apply text-blue-400;
+}
+
+.theme-toggle-thumb {
+    @apply absolute top-px h-5 w-5 rounded-full border border-border-subtle shadow-sm transition-all duration-300;
+
+    &[data-dark="true"] {
+        @apply left-6 bg-foreground;
+    }
+
+    &[data-dark="false"] {
+        @apply left-0.5 bg-foreground;
+    }
+}

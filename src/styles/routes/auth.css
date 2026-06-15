@@ -1,0 +1,3 @@
+:is(#sign-in, #sign-up) {
+    @apply mx-auto flex justify-center;
+}

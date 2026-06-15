@@ -1,0 +1,72 @@
+.form-item {
+    @apply flex! flex-col! gap-2! mb-10 last:mb-0!;
+}
+
+.form-label {
+    @apply block! w-fit! text-sm! font-bold! leading-normal! uppercase! tracking-wider!;
+
+    &[data-dark="true"] {
+        @apply text-white!;
+    }
+
+    &[data-dark="false"] {
+        @apply text-gray-950!;
+    }
+
+}
+
+.form-description {
+    @apply block! text-xs! text-text-muted!;
+}
+
+.form-message {
+    @apply block! text-xs! text-red-400!;
+}
+
+.input-field {
+    @apply h-auto! min-h-0! w-full! rounded-none! border! border-border-subtle! bg-surface! px-4! py-4! shadow-none! outline-none! transition-none! placeholder:text-text-muted! focus-visible:border-border-subtle! focus-visible:ring-0! focus-visible:ring-transparent! ring-0! aria-invalid:ring-0! dark:bg-surface!;
+
+    &[data-dark="true"] {
+        @apply text-white;
+    }
+
+    &[data-dark="false"] {
+        @apply text-gray-950;
+    }
+}
+
+.input-field-textarea {
+    @apply resize-none!;
+}
+
+.input-field-lg {
+    @apply text-lg! md:text-sm!;
+}
+
+.input-field-sm {
+    @apply text-sm! md:text-sm!;
+}
+
+.input-field-mono {
+    @apply font-mono!;
+}
+
+.input-field-description {
+    @apply min-h-32!;
+}
+
+.input-field-prompt {
+    @apply min-h-52!;
+}
+
+.input-field-usage {
+    @apply min-h-60!;
+}
+
+.btn-primary {
+    @apply bg-primary! text-primary-foreground! font-semibold! text-sm! px-6! py-2.5! rounded-sm! transition-all! hover:bg-accent-secondary! cursor-pointer! flex! items-center! justify-center! gap-2! border! border-primary!;
+}
+
+.btn-secondary {
+    @apply bg-transparent! text-foreground! border! border-border! px-6! py-2.5! rounded-sm! font-semibold! text-sm! transition-all! hover:bg-accent! hover:border-muted-foreground! cursor-pointer! flex! items-center! justify-center! gap-2!;
+}

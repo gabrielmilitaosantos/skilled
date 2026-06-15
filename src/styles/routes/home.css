@@ -1,0 +1,43 @@
+#home {
+    @apply relative z-10;
+
+    .hero {
+        @apply flex flex-col items-center gap-6 text-center md:gap-8;
+
+        .copy {
+            @apply flex max-w-4xl flex-col gap-4 px-4;
+
+            h1 {
+                @apply text-4xl font-bold leading-tight tracking-tighter text-black dark:text-white sm:text-5xl md:text-7xl md:leading-none;
+
+                br {
+                    @apply hidden sm:block;
+                }
+            }
+
+            p {
+                @apply mx-auto max-w-2xl leading-relaxed text-text-muted md:text-lg;
+            }
+        }
+
+        .actions {
+            @apply flex w-full flex-col items-center gap-4 px-4 sm:w-auto sm:flex-row;
+
+            & > a {
+                @apply w-full sm:w-auto;
+            }
+        }
+    }
+
+    .latest {
+        @apply mt-30 flex flex-col gap-8 px-4 py-8 md:px-12 md:py-12;
+
+        h2 {
+            @apply text-2xl font-bold text-black dark:text-white;
+        }
+
+        p {
+            @apply text-text-muted;
+        }
+    }
+}

@@ -1,0 +1,14 @@
+@utility bg-diagonal-pattern {
+    background-color: var(--background);
+    background-image: repeating-linear-gradient(
+            -45deg,
+            var(--secondary) 0,
+            var(--secondary) 1px,
+            transparent 1px,
+            transparent 12px
+    );
+}
+
+@utility text-gradient {
+    @apply bg-linear-to-b from-accent-primary to-accent-secondary bg-clip-text text-transparent;
+}
