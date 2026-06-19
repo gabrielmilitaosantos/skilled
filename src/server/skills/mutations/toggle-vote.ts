@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "#/db/client.ts";
 import { skillVotes } from "#/db/schema.ts";
+import { UnauthorizedError } from "#/lib/errors.ts";
 import { getUserByClerkId } from "#/server/users/queries/get-user-by-clerk-id.ts";
 
 export const toggleVote = createServerFn({ method: "POST" })
@@ -13,7 +14,7 @@ export const toggleVote = createServerFn({ method: "POST" })
 		if (!clerkId) throw new Error("Unauthorized");
 
 		const user = await getUserByClerkId(clerkId);
-		if (!user) throw new Error("User not found");
+		if (!user) throw new UnauthorizedError("User not found.");
 
 		// Try to insert.
 		// onConflictDoNothing ignores the error if it already exists.

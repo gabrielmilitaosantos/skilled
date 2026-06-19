@@ -7,8 +7,16 @@ import {
 	BookmarkCheck,
 	Check,
 	Copy,
+	Home,
+	SearchX,
 } from "lucide-react";
 import { useState } from "react";
+import { RootErrorBoundary } from "#/components/RootErrorBoundary.tsx";
+import {
+	isNotFoundError,
+	isUnauthorizedError,
+	NotFoundError,
+} from "#/lib/errors.ts";
 import { toggleSave } from "#/server/skills/mutations/toggle-save.ts";
 import { toggleVote } from "#/server/skills/mutations/toggle-vote.ts";
 import { getSkillById } from "#/server/skills/queries/get-skill-by-id.ts";
@@ -16,8 +24,38 @@ import { getSkillById } from "#/server/skills/queries/get-skill-by-id.ts";
 export const Route = createFileRoute("/skills/$id")({
 	loader: async ({ params }) => {
 		const skill = await getSkillById({ data: params.id });
-		if (!skill) throw new Error("Skill not found");
+		if (!skill) {
+			throw new NotFoundError(
+				"Skill not found. It may have been deleted or the link is incorrect.",
+			);
+		}
+
 		return skill;
+	},
+	// Specific error for this route - skill not found | invalid id.
+	// Unhandled errors are sent to RootErrorBoundary.
+	errorComponent: ({ error }) => {
+		if (isNotFoundError(error)) {
+			return (
+				<div id="error-page">
+					<div className="error-content">
+						<SearchX size={40} className="text-text-muted" />
+						<div className="error-copy">
+							<h1>Skill Not Found</h1>
+							<p>{error.message}</p>
+						</div>
+						<div className="error-actions">
+							<Link to="/skills" className="btn-primary">
+								<Home size={16} />
+								Browse Skills
+							</Link>
+						</div>
+					</div>
+				</div>
+			);
+		}
+
+		return <RootErrorBoundary error={error} />;
 	},
 	component: SkillDetailPage,
 });
@@ -63,7 +101,7 @@ function SkillDetailPage() {
 		} catch (error: unknown) {
 			setVoted(prevVoted);
 			setVotes(prevVotes);
-			if (error instanceof Error && error.message.includes("Unauthorized")) {
+			if (isUnauthorizedError(error)) {
 				await navigate({ to: "/sign-in/$" });
 			}
 		} finally {
@@ -85,7 +123,7 @@ function SkillDetailPage() {
 			await queryClient.invalidateQueries({ queryKey: ["saved-skills"] });
 		} catch (error: unknown) {
 			setSaved(prevSaved);
-			if (error instanceof Error && error.message.includes("Unauthorized")) {
+			if (isUnauthorizedError(error)) {
 				await navigate({ to: "/sign-in/$" });
 			}
 		} finally {

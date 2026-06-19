@@ -3,17 +3,17 @@ import { createServerFn } from "@tanstack/react-start";
 import { count, eq } from "drizzle-orm";
 import { db } from "#/db/client.ts";
 import { savedSkills, skills, skillVotes, users } from "#/db/schema.ts";
+import { UnauthorizedError } from "#/lib/errors.ts";
 import { getUserSkillStates } from "#/server/skills/queries/get-user-skill-states.ts";
 import { getUserByClerkId } from "#/server/users/queries/get-user-by-clerk-id.ts";
 
 export const getSavedSkills = createServerFn({ method: "GET" }).handler(
 	async (): Promise<SkillRecord[]> => {
 		const { userId: clerkId } = await auth();
-
-		if (!clerkId) throw new Error("Unauthorized");
+		if (!clerkId) throw new UnauthorizedError();
 
 		const user = await getUserByClerkId(clerkId);
-		if (!user) throw new Error("User not found");
+		if (!user) throw new UnauthorizedError("User not found.");
 
 		const rows = await db
 			.select({
