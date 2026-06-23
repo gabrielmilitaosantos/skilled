@@ -1,0 +1,23 @@
+#error-page {
+    @apply relative z-10 flex min-h-[60vh] items-center justify-center px-4;
+
+    .error-content {
+        @apply flex flex-col items-center gap-6 text-center;
+    }
+
+    .error-copy {
+        @apply flex flex-col gap-2;
+
+        h1 {
+            @apply text-2xl font-bold text-black dark:text-white md:text-3xl;
+        }
+
+        p {
+            @apply max-w-sm text-text-muted;
+        }
+    }
+
+    .error-actions {
+        @apply flex gap-3;
+    }
+}

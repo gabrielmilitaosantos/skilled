@@ -2,6 +2,7 @@ import { auth } from "@clerk/tanstack-react-start/server";
 import { createServerFn } from "@tanstack/react-start";
 import { db } from "#/db/client.ts";
 import { skills } from "#/db/schema.ts";
+import { UnauthorizedError } from "#/lib/errors.ts";
 import { skillSchema } from "#/server/skills/schemas/skill-schema.ts";
 import { getUserByClerkId } from "#/server/users/queries/get-user-by-clerk-id.ts";
 
@@ -11,13 +12,13 @@ export const createSkill = createServerFn({ method: "POST" })
 		const { userId: clerkId } = await auth();
 
 		if (!clerkId) {
-			throw new Error("Unauthorized");
+			throw new UnauthorizedError();
 		}
 
 		const author = await getUserByClerkId(clerkId);
 
 		if (!author) {
-			throw new Error("User not found in database");
+			throw new UnauthorizedError("User not found.");
 		}
 
 		const [skill] = await db

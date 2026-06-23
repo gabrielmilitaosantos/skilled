@@ -10,6 +10,7 @@ import {
 	MessageSquare,
 } from "lucide-react";
 import { useState } from "react";
+import { isUnauthorizedError } from "#/lib/errors.ts";
 import { toggleSave } from "#/server/skills/mutations/toggle-save.ts";
 import { toggleVote } from "#/server/skills/mutations/toggle-vote.ts";
 
@@ -83,7 +84,7 @@ const SkillCard = ({
 			setVoted(prevVoted);
 			setVotes(prevVotes);
 
-			if (error instanceof Error && error.message.includes("Unauthorized")) {
+			if (isUnauthorizedError(error)) {
 				await navigate({ to: "/sign-in/$" });
 			}
 		} finally {
@@ -109,7 +110,7 @@ const SkillCard = ({
 			await queryClient.invalidateQueries({ queryKey: ["saved-skills"] });
 		} catch (error: unknown) {
 			setSaved(prevSaved);
-			if (error instanceof Error && error.message.includes("Unauthorized")) {
+			if (isUnauthorizedError(error)) {
 				await navigate({ to: "/sign-in/$" });
 			}
 		} finally {

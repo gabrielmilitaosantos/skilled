@@ -11,6 +11,8 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { createServerFn } from "@tanstack/react-start";
 import Crosshair from "#/components/Crosshair.tsx";
 import Navbar from "#/components/Navbar.tsx";
+import { RootErrorBoundary } from "#/components/RootErrorBoundary.tsx";
+import { NotFoundError } from "#/lib/errors.ts";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
 
@@ -25,12 +27,43 @@ const fetchClerkAuth = createServerFn({ method: "GET" }).handler(async () => {
 	return { userId };
 });
 
+const themeScript = `
+(() => {
+	try {
+		const storageKey = "skilled-theme";
+		const stored = localStorage.getItem(storageKey);
+		
+		const theme =
+			stored ||
+			(window.matchMedia("(prefers-color-scheme: dark)").matches
+				? "dark"
+				: "light");
+				
+		if (theme === "dark") {
+			document.documentElement.classList.add("dark");
+		} else {
+			document.documentElement.classList.remove("dark");
+		}
+	} catch (_) {}
+})();
+`;
+
 export const Route = createRootRouteWithContext<MyRouterContext>()({
 	// userId available for all children routes via context
 	beforeLoad: async () => {
 		const { userId } = await fetchClerkAuth();
 		return { userId };
 	},
+	errorComponent: ({ error }) => <RootErrorBoundary error={error} />,
+	notFoundComponent: () => (
+		<RootErrorBoundary
+			error={
+				new NotFoundError(
+					"The page you're looking for doesn't exist or has been moved.",
+				)
+			}
+		/>
+	),
 	head: () => ({
 		meta: [
 			{
@@ -57,27 +90,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 	}),
 	shellComponent: RootDocument,
 });
-
-const themeScript = `
-(() => {
-	try {
-		const storageKey = "skilled-theme";
-		const stored = localStorage.getItem(storageKey);
-		
-		const theme =
-			stored ||
-			(window.matchMedia("(prefers-color-scheme: dark)").matches
-				? "dark"
-				: "light");
-				
-		if (theme === "dark") {
-			document.documentElement.classList.add("dark");
-		} else {
-			document.documentElement.classList.remove("dark");
-		}
-	} catch (_) {}
-})();
-`;
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
