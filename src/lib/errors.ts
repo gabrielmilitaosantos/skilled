@@ -38,24 +38,22 @@ export class DatabaseError extends AppError {
 // Helpers for checking the instance (fallback serialization)
 export function isNotFoundError(error: unknown): error is NotFoundError {
 	if (error instanceof NotFoundError) return true;
-	return error instanceof Error && error.name === "NotFoundError";
+	if (!(error instanceof Error)) return false;
+	return error.name === "NotFoundError";
 }
 
 export function isUnauthorizedError(
 	error: unknown,
 ): error is UnauthorizedError {
 	if (error instanceof UnauthorizedError) return true;
-	return (
-		error instanceof Error &&
-		(error.name === "UnauthorizedError" ||
-			error.message.includes("Unauthorized") ||
-			error.message.includes("User not found"))
-	);
+	if (!(error instanceof Error)) return false;
+	return error.name === "UnauthorizedError";
 }
 
 export function isDatabaseError(error: unknown): error is DatabaseError {
 	if (error instanceof DatabaseError) return true;
-	return error instanceof Error && error.name === "DatabaseError";
+	if (!(error instanceof Error)) return false;
+	return error.name === "DatabaseError";
 }
 
 // ======================================================================

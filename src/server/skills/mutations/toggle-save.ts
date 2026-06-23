@@ -11,7 +11,7 @@ export const toggleSave = createServerFn({ method: "POST" })
 	.inputValidator(z.object({ skillId: z.uuid() }))
 	.handler(async ({ data }) => {
 		const { userId: clerkId } = await auth();
-		if (!clerkId) throw new Error("Unauthorized");
+		if (!clerkId) throw new UnauthorizedError();
 
 		const user = await getUserByClerkId(clerkId);
 		if (!user) throw new UnauthorizedError("User not found");
