@@ -1,19 +1,16 @@
 import { ClerkProvider } from "@clerk/tanstack-react-start";
 import { auth } from "@clerk/tanstack-react-start/server";
-import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
 	HeadContent,
 	Scripts,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { createServerFn } from "@tanstack/react-start";
 import Crosshair from "#/components/Crosshair.tsx";
 import Navbar from "#/components/Navbar.tsx";
 import { RootErrorBoundary } from "#/components/RootErrorBoundary.tsx";
 import { NotFoundError } from "#/lib/errors.ts";
-import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
 
 interface MyRouterContext {
@@ -86,6 +83,11 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				rel: "stylesheet",
 				href: appCss,
 			},
+			{
+				rel: "icon",
+				type: "image/svg+xml",
+				href: "/favicon.svg",
+			},
 		],
 	}),
 	shellComponent: RootDocument,
@@ -119,19 +121,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 							<div className="frame">{children}</div>
 						</main>
 					</div>
-
-					<TanStackDevtools
-						config={{
-							position: "bottom-right",
-						}}
-						plugins={[
-							{
-								name: "Tanstack Router",
-								render: <TanStackRouterDevtoolsPanel />,
-							},
-							TanStackQueryDevtools,
-						]}
-					/>
 				</ClerkProvider>
 				<Scripts />
 			</body>
