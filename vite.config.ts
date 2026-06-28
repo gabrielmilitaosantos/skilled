@@ -10,6 +10,9 @@ const config = defineConfig({
 	server: {
 		allowedHosts: true,
 	},
+	ssr: {
+		noExternal: [/^@clerk\/.*/],
+	},
 });
 
 export default config;

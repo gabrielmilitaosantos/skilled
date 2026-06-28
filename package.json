@@ -18,7 +18,7 @@
     "db:migrate": "dotenv -e .env.local -- drizzle-kit migrate"
   },
   "dependencies": {
-    "@clerk/tanstack-react-start": "^1.2.3",
+    "@clerk/tanstack-react-start": "^1.4.9",
     "@neondatabase/serverless": "^1.1.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-query": "5.100.9",
