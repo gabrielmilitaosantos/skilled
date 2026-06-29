@@ -103,7 +103,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<script
 					defer
 					src="https://cloud.umami.is/script.js"
-					data-website-id="5caf114c-74cb-4115-b021-49ec93b184b2"
+					data-website-id="f191fadb-e593-43b1-962f-b2e55a8c4e73"
 				></script>
 			</head>
 			<body className="font-sans antialiased wrap-anywhere">
