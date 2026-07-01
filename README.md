@@ -1,259 +1,173 @@
-Welcome to your new TanStack Start app! 
+# Skilled
 
-# Getting Started
+A registry for AI agent skills — discover, publish, and manage reusable capabilities from a route-driven workspace.
 
-To run this application:
+**Live application:** [skilled-iota.vercel.app](https://skilled-iota.vercel.app)
+
+---
+
+## Overview
+
+Skilled is a platform where authenticated users can publish "skills" — reusable AI agent behavior definitions, including an install command, prompt configuration, and usage example. Other users can explore the catalog, search by name, tag or author, upvote, and save skills of interest.
+
+## Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | TanStack Start (React 19, SSR) |
+| Routing | TanStack Router (file-based) |
+| Server state | TanStack Query |
+| Database | PostgreSQL (Neon, serverless) |
+| ORM | Drizzle ORM |
+| Authentication | Clerk |
+| Styling | Tailwind CSS v4 |
+| Validation | Zod |
+| Analytics | Umami |
+| Build / Deploy | Vite + Nitro → Vercel |
+| Lint / Format | Biome |
+
+## Architecture
+
+### Routing and rendering
+
+The project uses TanStack Router's file-based routing. Routes that require data on load use a `loader` to fetch server-side before the first render (SSR). Pages with reactive search and filters (`/skills`) combine this initial `loader` with TanStack Query on the client, which takes over refetching, debouncing, and pagination without full reloads.
+
+### Server layer
+
+All database communication goes through **server functions** (`createServerFn`), organized as:
+
+```
+src/server/
+  skills/
+    queries/      → reads (getSkills, searchSkills, getSkillById, ...)
+    mutations/    → writes (createSkill, toggleVote, toggleSave, ...)
+    schemas/      → shared Zod validation between client and server
+  users/
+    queries/
+    mutations/
+```
+
+This pattern prevents server-only code (database connections, secrets) from leaking into the client bundle — TanStack Start creates an RPC bridge between the component call and the actual server-side execution.
+
+### Authentication and user sync
+
+Authentication is handled by **Clerk**, supporting email/password and OAuth (Google). Since the application database maintains its own `users` table — decoupled from Clerk by design, using `clerkId` only as a reference key — synchronization between both sources happens via **webhook**:
+
+```
+Clerk (user.created / user.updated / user.deleted)
+  → POST /api/webhooks/clerk
+  → syncUser() / deleteUser()
+  → users table in Postgres
+```
+
+Protected routes (`/skills/new`, `/saved`) verify the session in the root route's `beforeLoad`, which populates `userId` in the router context from a server-side Clerk call — available to any child route without repeated requests.
+
+### Data model
+
+```
+users (id, clerk_id, email, username, image_url)
+  ↓ 1:N
+skills (id, author_id, title, description, tags[], install_command, prompt_config, usage_example, created_at)
+  ↓ N:N (via junction tables with composite primary key)
+skill_votes (user_id, skill_id)
+saved_skills (user_id, skill_id)
+```
+
+Indexes on `author_id`, `created_at`, and a GIN index on `tags` support the most frequent queries (listing by author, chronological ordering, and tag search).
+
+### Error handling
+
+Domain errors (`NotFoundError`, `UnauthorizedError`, `DatabaseError`) are typed classes with `serializationAdapters` registered in `start.ts`, ensuring the class identity survives the server → client boundary in loaders. For mutations called directly from the client (votes, saves), the same errors are identified by `name` as a fallback strategy, since that TanStack Start serialization path does not preserve `instanceof` the same way. An `errorComponent` at the root route level catches any unhandled error and renders an appropriate page by type (404, 401, database failure, generic error).
+
+### Theming
+
+Dark mode is the default. The preference is persisted in `localStorage` and applied via a synchronous inline script in `<head>`, before the first paint — preventing theme flash on load.
+
+## Environments
+
+| | Development | Production |
+|---|---|---|
+| Hosting | `localhost:3000` (Vite dev server) | Vercel |
+| Database | Neon (single branch) | Neon (same project) |
+| Authentication | Clerk — development instance | Clerk — development instance |
+| Clerk webhook | Tunnel via Cloudflare (`cloudflared`) | `https://skilled-iota.vercel.app/api/webhooks/clerk` |
+| Analytics | Disabled | Umami Cloud |
+
+> The project runs entirely on services with a permanent free tier (Vercel, Neon, Clerk, Umami Cloud), with no dependency on credit cards or expiring credits.
+
+## Local setup
+
+### Prerequisites
+
+- Node.js 20+
+- [Neon](https://neon.tech) account (serverless PostgreSQL)
+- [Clerk](https://clerk.com) account
+- [Umami Cloud](https://cloud.umami.is) account (optional, for analytics)
+
+### 1. Clone and install
 
 ```bash
+git clone https://github.com/<your-username>/skilled.git
+cd skilled
 npm install
+```
+
+### 2. Environment variables
+
+Create a `.env.local` file at the project root:
+
+```env
+# Clerk
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxxxxx
+CLERK_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxxxxx
+CLERK_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxx
+CLERK_WEBHOOK_SIGNING_SECRET=whsec_xxxxxxxxxxxxxxxx
+
+# Neon PostgreSQL
+DATABASE_URL=postgresql://user:password@host.neon.tech/skilled?sslmode=require
+```
+
+### 3. Database
+
+Generate and apply migrations to the configured database:
+
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
+### 4. Clerk webhook (development)
+
+User synchronization requires Clerk to reach your local environment. Use a tunnel:
+
+```bash
+npx cloudflared tunnel --url http://localhost:3000
+```
+
+Configure the generated URL (`https://xxxx.trycloudflare.com/api/webhooks/clerk`) as a webhook endpoint in the Clerk Dashboard, subscribing to the `user.created` event (and other user events as needed).
+
+### 5. Run the project
+
+```bash
 npm run dev
 ```
 
-# Building For Production
+The application starts at `http://localhost:3000`.
 
-To build this application for production:
+### Available scripts
 
-```bash
-npm run build
-```
+| Command | Description |
+|---|---|
+| `npm run dev` | Starts the development server |
+| `npm run build` | Production build (Vite + Nitro) |
+| `npm start` | Runs the production build locally |
+| `npm run db:generate` | Generates migrations from the schema |
+| `npm run db:migrate` | Applies pending migrations to the database |
+| `npm run lint` / `format` / `check` | Lint, formatting, and checking via Biome |
+| `npm test` | Runs the test suite |
 
-## Testing
+## Deployment
 
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+Deployment is done on Vercel via GitHub integration — any push to the main branch automatically triggers a new build. The build uses the `nitro/vite` plugin, which Vercel detects and packages without additional manual configuration.
 
-```bash
-npm run test
-```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `npm install @tailwindcss/vite tailwindcss -D`
-
-## Linting & Formatting
-
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
-
-
-```bash
-npm run lint
-npm run format
-npm run check
-```
-
-
-## Setting up Clerk
-
-1. Sign up at [clerk.com](https://clerk.com) and create an application
-2. Copy the **Publishable Key** from the Clerk dashboard
-3. Set it in your `.env.local`:
-   ```bash
-   VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
-   ```
-4. Visit the demo route at `/demo/clerk` once `npm run dev` is running
-
-### What's wired up
-
-- **`<ClerkProvider>`** at the app root (`src/integrations/clerk/provider.tsx`) handles auth context for the whole tree
-- **`<SignInButton>` / `<UserButton>`** in the header swap based on auth state
-- **`/demo/clerk`** shows Clerk's prebuilt sign-in UI and a signed-in greeting
-
-### Protecting a route
-
-Wrap any component in `<SignedIn>` / `<SignedOut>`:
-
-```tsx
-import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
-
-function ProtectedPage() {
-  return (
-    <>
-      <SignedIn>
-        <YourPageContent />
-      </SignedIn>
-      <SignedOut>
-        <RedirectToSignIn />
-      </SignedOut>
-    </>
-  )
-}
-```
-
-For server-side checks (route loaders, server functions), see the Clerk docs on [`auth()`](https://clerk.com/docs/references/backend/auth).
-
-### Production checklist
-
-- Replace the test keys with **production keys** from a dedicated production Clerk instance
-- Configure your production domain under **Domains** in the Clerk dashboard
-- Set up social providers (Google, GitHub, etc.) under **User & Authentication → Social Connections**
-
-
-## Shadcn
-
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
-
-```bash
-pnpm dlx shadcn@latest add button
-```
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+Production environment variables are configured directly in the Vercel dashboard (Project → Settings → Environment Variables), mirroring the same keys from `.env.local`.
